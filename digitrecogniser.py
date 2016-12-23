@@ -11,13 +11,13 @@ class Reducer:
     #def __init__(self):
 
     def distance(self, a, b):
-        return  sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
+        return  sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
 
     def point_line_distance(self, point, start, end):
         if (start == end):
             return self.distance(point, start)
         else:
-            n = abs((end.x - start.x) * (start.y - point.y) - (start.x - point.x) * (end.y - start.y))
+            n = abs((end[0] - start[0]) * (start[1] - point[1]) - (start[0] - point[0]) * (end[1] - start[1]))
             d = self.distance(end, start)
             return n / d
 
@@ -35,41 +35,11 @@ class Reducer:
             results = [points[0], points[-1]]
         return results
 
-
-class Point:
-    x = 0
-    y = 0
-    def __init__(self):
-        self.x = 0
-        self.y = 0
-    def __init__(self, _x, _y):
-        self.x = _x
-        self.y = _y
-
-class PointList:
-    ptList = []
-    def __init__(self):
-        self.ptList = []
-    def __getitem__(self, item):
-        return self.ptList[item]
-    def __len__(self):
-        return len(self.ptList)
-    def getSize(self):
-        return len(self.ptList)
-    def addPoint(self, _x, _y):
-        pt = Point(_x, _y)
-        self.ptList.append(pt)
-    def getPoint(self, idx):
-        return self.ptList[idx]
-    def removePoints(self):
-        del self.ptList[:]
-
-
 class MainWidget(QtGui.QWidget):
     reducer = 0
-    ptList = 0
-    mouseLocation = Point(0, 0)
-    lastPos = Point(0, 0)
+    ptList = []
+    mouseLocation = [0, 0]
+    lastPos = [0, 0]
     isPainting = False
     isPainted = False
     clearButton = 0
@@ -78,9 +48,9 @@ class MainWidget(QtGui.QWidget):
     def __init__(self):
         super(MainWidget, self).__init__()
         self.reducer = Reducer()
-        self.ptList = PointList()
-        self.mouseLocation = Point(0, 0)
-        self.lastPos = Point(0, 0)
+        self.ptList = []
+        self.mouseLocation = [0, 0]
+        self.lastPos = [0, 0]
         self.isPainting = False
         self.isPainted = False
         self.clearButton = 0
@@ -113,10 +83,10 @@ class MainWidget(QtGui.QWidget):
                 self.clearArea()
                 self.isPainted = False
 
-            self.mouseLocation = Point(event.x(), event.y())
-            if(self.lastPos.x != self.mouseLocation.x and self.lastPos.y != self.mouseLocation.y):
-                self.lastPos = Point(event.x(), event.y())
-                self.ptList.addPoint(event.x(), event.y())
+            self.mouseLocation = [event.x(), event.y()]
+            if(self.lastPos[0] != self.mouseLocation[0] and self.lastPos[1] != self.mouseLocation[1]):
+                self.lastPos = [event.x(), event.y()]
+                self.ptList.append([event.x(), event.y()])
                 self.repaint()
 
     def mouseReleaseEvent(self, event):
@@ -136,19 +106,17 @@ class MainWidget(QtGui.QWidget):
             pt2 = self.ptList[i+1]
             pen = QtGui.QPen(QtGui.QColor(255,0,0), 4, QtCore.Qt.SolidLine)
             painter.setPen(pen)
-            painter.drawLine(pt1.x,pt1.y,pt2.x,pt2.y)
+            painter.drawLine(pt1[0],pt1[1],pt2[0],pt2[1])
 
     def clearArea(self):
-        self.ptList.removePoints()
+        del self.ptList[:]
         self.repaint()
 
     def reducePt(self):
-        print self.ptList.getSize()
-        array = self.reducer.rdp(self.ptList, 10.0)
-        print len(array)
-        self.clearArea()
-
-        self.ptList = array
+        print len(self.ptList)
+        self.ptList = self.reducer.rdp(self.ptList, 10.0)
+        print len(self.ptList)
+        # self.clearArea()
         self.repaint()
 
 

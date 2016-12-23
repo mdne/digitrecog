@@ -4,11 +4,11 @@ import sys
 from PyQt4 import QtGui, QtCore
 from math import sqrt
 
-'''
-TODO разобраться с атрибутами листа и дописать редьюс
-'''
 class Reducer:
-    #def __init__(self):
+    weights = []
+
+    def __init__(self):
+        self.weights = []
 
     def distance(self, a, b):
         return  sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
@@ -21,19 +21,37 @@ class Reducer:
             d = self.distance(end, start)
             return n / d
 
-    def rdp(self, points, epsilon):
+    def douglasPeucker(self, points, start, end):
         dmax = 0.0
         index = 0
-        for i in range(1, len(points) - 1):
-            d = self.point_line_distance(points[i], points[0], points[-1])
+        for i in range(start+1, end):
+            d = self.point_line_distance(points[i], points[start], points[end])
             if d > dmax:
                 index = i
                 dmax = d
-        if dmax >= epsilon:
-            results = self.rdp(points[:index+1], epsilon)[:-1] + self.rdp(points[index:], epsilon)
-        else:
-            results = [points[0], points[-1]]
-        return results
+        if(index == 0): return 
+        self.weights[index] = dmax
+        self.douglasPeucker(points, start, index)
+        self.douglasPeucker(points, index, end)
+
+    def rdp(self, points, numPoints):
+        self.weights = [0.0] * len(points)
+        self.douglasPeucker(points, 0, len(points)-1)
+
+        self.weights[0] = float("inf")
+        self.weights[len(points)-1] = float("inf")
+        weightsTmp = self.weights[:]
+        weightsTmp.sort(reverse = True)
+        maxTolerace = weightsTmp[numPoints - 1]
+        print maxTolerace
+        result = []
+        for i in range(0, len(points)):
+            if(self.weights[i] >= maxTolerace):
+                result.append(points[i])
+        return result
+
+    def pointNormalize(self, points):
+        return 0
 
 class MainWidget(QtGui.QWidget):
     reducer = 0
@@ -101,7 +119,7 @@ class MainWidget(QtGui.QWidget):
 
     def drawLines(self, event, painter):
         painter.setRenderHint(QtGui.QPainter.Antialiasing);
-        for i in range(len(self.ptList) - 1):
+        for i in range(0, len(self.ptList)-1):
             pt1 = self.ptList[i]
             pt2 = self.ptList[i+1]
             pen = QtGui.QPen(QtGui.QColor(255,0,0), 4, QtCore.Qt.SolidLine)
@@ -114,7 +132,7 @@ class MainWidget(QtGui.QWidget):
 
     def reducePt(self):
         print len(self.ptList)
-        self.ptList = self.reducer.rdp(self.ptList, 10.0)
+        self.ptList = self.reducer.rdp(self.ptList, 16)
         print len(self.ptList)
         # self.clearArea()
         self.repaint()

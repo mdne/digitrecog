@@ -79,7 +79,7 @@ class MainWidget(QtGui.QWidget):
         self.clearButton = QtGui.QPushButton("Clear")
         QtCore.QObject.connect(self.clearButton, QtCore.SIGNAL("clicked()"),self.clearArea)
         self.recogButton = QtGui.QPushButton("Recognize")
-        QtCore.QObject.connect(self.recogButton, QtCore.SIGNAL("clicked()"),self.reducePt)
+        #QtCore.QObject.connect(self.recogButton, QtCore.SIGNAL("clicked()"),self.reducePt)
 
         hbox = QtGui.QHBoxLayout()
         hbox.addWidget(self.clearButton)
@@ -110,6 +110,7 @@ class MainWidget(QtGui.QWidget):
     def mouseReleaseEvent(self, event):
         self.isPainting = False
         self.isPainted = True
+        self.reducePt()
 
     def paintEvent(self,event):
         painter = QtGui.QPainter()

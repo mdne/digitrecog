@@ -132,7 +132,7 @@ class MainWidget(QtGui.QWidget):
 
     def reducePt(self):
         print len(self.ptList)
-        self.ptList = self.reducer.rdp(self.ptList, 16)
+        self.ptList = self.reducer.rdp(self.ptList, 8)
         print len(self.ptList)
         # self.clearArea()
         self.repaint()

@@ -4,6 +4,7 @@ import sys
 from PyQt4 import QtGui, QtCore
 from math import sqrt
 import numpy as np
+from digits_train import Dataset
 
 class Reducer:
     weights = []
@@ -82,10 +83,12 @@ class MainWidget(QtGui.QWidget):
     isPainted = False
     clearButton = 0
     recogButton = 0
+    ds = None
 
     def __init__(self):
         super(MainWidget, self).__init__()
         self.reducer = Reducer()
+        self.ds = Dataset()
         self.ptList = []
         self.mouseLocation = [0, 0]
         self.lastPos = [0, 0]
@@ -99,7 +102,7 @@ class MainWidget(QtGui.QWidget):
         self.clearButton = QtGui.QPushButton("Clear")
         QtCore.QObject.connect(self.clearButton, QtCore.SIGNAL("clicked()"),self.clearArea)
         self.recogButton = QtGui.QPushButton("Recognize")
-        #QtCore.QObject.connect(self.recogButton, QtCore.SIGNAL("clicked()"),self.reducePt)
+        QtCore.QObject.connect(self.recogButton, QtCore.SIGNAL("clicked()"),self.recog)
 
         hbox = QtGui.QHBoxLayout()
         hbox.addWidget(self.clearButton)
@@ -112,15 +115,16 @@ class MainWidget(QtGui.QWidget):
         self.setGeometry(300, 300, 500, 500)
         self.show()
 
+    def recog(self):
+        self.ds.read()
+        self.ptList = self.reducer.pointsReshape(self.ptList)
+        self.ds.train1(self.ptList)
+
     def mousePressEvent(self, event):
         self.isPainting = True
 
     def mouseMoveEvent(self, event):
         if(self.isPainting == True):
-            if(self.isPainted):
-                self.clearArea()
-                self.isPainted = False
-
             self.mouseLocation = [event.x(), event.y()]
             if(self.lastPos[0] != self.mouseLocation[0] and self.lastPos[1] != self.mouseLocation[1]):
                 self.lastPos = [event.x(), event.y()]
@@ -129,7 +133,6 @@ class MainWidget(QtGui.QWidget):
 
     def mouseReleaseEvent(self, event):
         self.isPainting = False
-        self.isPainted = True
         self.reducePt()
 
     def paintEvent(self,event):
@@ -155,7 +158,6 @@ class MainWidget(QtGui.QWidget):
         self.ptList = self.reducer.rdp(self.ptList, 8)
         self.ptList = self.reducer.pointNormalize(self.ptList)
         self.repaint()
-        print self.reducer.pointsReshape(self.ptList)
 
 
 def main():

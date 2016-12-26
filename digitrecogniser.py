@@ -3,6 +3,7 @@
 import sys
 from PyQt4 import QtGui, QtCore
 from math import sqrt
+import numpy as np
 
 class Reducer:
     weights = []
@@ -43,7 +44,6 @@ class Reducer:
         weightsTmp = self.weights[:]
         weightsTmp.sort(reverse = True)
         maxTolerace = weightsTmp[numPoints - 1]
-        print maxTolerace
         result = []
         for i in range(0, len(points)):
             if(self.weights[i] >= maxTolerace):
@@ -51,7 +51,27 @@ class Reducer:
         return result
 
     def pointNormalize(self, points):
-        return 0
+        xmax = max(x for x,y in points)
+        xmin = min(x for x,y in points)
+        ymax = max(y for x,y in points)
+        ymin = min(y for x,y in points)
+
+        Xm = (xmax + xmin) * 0.5 
+        Ym = (ymax + ymin) * 0.5
+        Sx = (xmax - xmin) * 0.5
+        Sy = (ymax - ymin) * 0.5
+        Smax = max(Sx, Sy)
+        result = []
+        for i in range(0, len(points)):
+            x = int(50 + 50*((points[i][0] - Xm) / Sx))
+            y = int(50 + 50*((points[i][1] - Ym) / Sy))
+            result.append([x, y])
+        return result
+
+    def pointsReshape(self, points):
+        tmp = np.asarray(points)
+        result = np.reshape(tmp, 16)
+        return result
 
 class MainWidget(QtGui.QWidget):
     reducer = 0
@@ -132,11 +152,10 @@ class MainWidget(QtGui.QWidget):
         self.repaint()
 
     def reducePt(self):
-        print len(self.ptList)
         self.ptList = self.reducer.rdp(self.ptList, 8)
-        print len(self.ptList)
-        # self.clearArea()
+        self.ptList = self.reducer.pointNormalize(self.ptList)
         self.repaint()
+        print self.reducer.pointsReshape(self.ptList)
 
 
 def main():

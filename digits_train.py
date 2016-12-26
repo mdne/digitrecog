@@ -101,16 +101,16 @@ class Dataset():
 		return pyx
 
 	def train(self):
-		trX = self.dataTr.reshape(-1, 1, 16, 1)
-		teX = self.dataTes.reshape(-1, 1, 16, 1)
+		trX = self.dataTr.reshape(self.dataTr.shape[0], 1, 16, 1)
+		teX = self.dataTes.reshape(self.dataTes.shape[0], 1, 16, 1)
 		trY = self.labelsTr;
 		teY = self.labelsTes
 		X = tf.placeholder("float", [None, 1, 16, 1])
 		Y = tf.placeholder("float", [None, 10])
 
-		w = self.init_weights([3, 3, 1, 32])       # 3x3x1 conv, 32 outputs
-		w2 = self.init_weights([3, 3, 32, 64])     # 3x3x32 conv, 64 outputs
-		w3 = self.init_weights([3, 3, 64, 128])    # 3x3x32 conv, 128 outputs
+		w = self.init_weights([1, 16, 1, 32])       # 3x3x1 conv, 32 outputs
+		w2 = self.init_weights([1, 16, 32, 64])     # 3x3x32 conv, 64 outputs
+		w3 = self.init_weights([1, 16, 64, 128])    # 3x3x32 conv, 128 outputs
 		w4 = self.init_weights([128 * 4 * 4, 625]) # FC 128 * 4 * 4 inputs, 625 outputs
 		w_o = self.init_weights([625, 10])         # FC 625 inputs, 10 outputs (labels)
 
@@ -139,6 +139,7 @@ class Dataset():
 			print(i, np.mean(np.argmax(teY[test_indices], axis=1) == 
 				sess.run(predict_op,feed_dict={X: teX[test_indices],
 					p_keep_conv: 1.0,p_keep_hidden: 1.0})))
+'''			
 	def model1(self, X, w_h, w_o):
 		h = tf.nn.sigmoid(tf.matmul(X, w_h)) # this is a basic mlp, think 2 stacked logistic regressions
 		return tf.matmul(h, w_o) # note that we dont take the softmax at the end because our cost fn does that for us
@@ -167,8 +168,8 @@ class Dataset():
 		testNum = np.reshape(testNum, (-1, 16))
 		print testNum
 		print "predictions", prediction.eval(feed_dict={X: testNum}, session=sess)
-
+'''
 if __name__ == '__main__':
 	d = Dataset()
 	d.read()
-	d.train1()
+	d.train()

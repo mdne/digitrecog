@@ -65,7 +65,8 @@ class Reducer:
         result = []
         for i in range(0, len(points)):
             x = int(50 + 50*((points[i][0] - Xm) / Sx))
-            y = int(50 + 50*((points[i][1] - Ym) / Sy))
+            # 100 т.к в обучающей выборке цифры перевернуты
+            y = 100 - int(50 + 50*((points[i][1] - Ym) / Sy))
             result.append([x, y])
         return result
 
@@ -156,8 +157,8 @@ class MainWidget(QtGui.QWidget):
 
     def reducePt(self):
         self.ptList = self.reducer.rdp(self.ptList, 8)
-        self.ptList = self.reducer.pointNormalize(self.ptList)
         self.repaint()
+        self.ptList = self.reducer.pointNormalize(self.ptList)
 
 
 def main():

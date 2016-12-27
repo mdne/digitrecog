@@ -4,7 +4,7 @@ import sys
 from PyQt4 import QtGui, QtCore
 from math import sqrt
 import numpy as np
-from digits_train import Dataset
+from net import NeuralNetwork
 
 class Reducer:
     weights = []
@@ -66,7 +66,7 @@ class Reducer:
         for i in range(0, len(points)):
             x = int(50 + 50*((points[i][0] - Xm) / Sx))
             # 100 т.к в обучающей выборке цифры перевернуты
-            y = 100 - int(50 + 50*((points[i][1] - Ym) / Sy))
+            y = 100-int(50 + 50*((points[i][1] - Ym) / Sy))
             result.append([x, y])
         return result
 
@@ -84,12 +84,14 @@ class MainWidget(QtGui.QWidget):
     isPainted = False
     clearButton = 0
     recogButton = 0
-    ds = None
+    nnet = None
+    digit = None
 
     def __init__(self):
         super(MainWidget, self).__init__()
         self.reducer = Reducer()
-        self.ds = Dataset()
+        self.nnet = NeuralNetwork()
+        self.nnet.load()
         self.ptList = []
         self.mouseLocation = [0, 0]
         self.lastPos = [0, 0]
@@ -97,6 +99,7 @@ class MainWidget(QtGui.QWidget):
         self.isPainted = False
         self.clearButton = 0
         self.recogButton = 0
+        self.digit = []
         self.initUI()
 
     def initUI(self):
@@ -117,12 +120,12 @@ class MainWidget(QtGui.QWidget):
         self.show()
 
     def recog(self):
-        self.ds.read()
-        self.ptList = self.reducer.pointsReshape(self.ptList)
-        self.ds.train1(self.ptList)
+        arr = self.reducer.pointsReshape(self.ptList)
+        print self.nnet.predict(arr)
 
     def mousePressEvent(self, event):
         self.isPainting = True
+        self.isPainted = False
 
     def mouseMoveEvent(self, event):
         if(self.isPainting == True):
@@ -156,10 +159,13 @@ class MainWidget(QtGui.QWidget):
         self.repaint()
 
     def reducePt(self):
+        # ar =   [[99, 80], [63,100], [25, 76], [79, 68],[100, 62], [97, 23], [54,  0],  [0, 16]]
+        # self.clearArea()
+        # self.ptList = ar
         self.ptList = self.reducer.rdp(self.ptList, 8)
-        self.repaint()
+        # self.repaint()
         self.ptList = self.reducer.pointNormalize(self.ptList)
-
+        self.repaint()
 
 def main():
     app = QtGui.QApplication(sys.argv)

@@ -81,11 +81,12 @@ class MainWidget(QtGui.QWidget):
     mouseLocation = [0, 0]
     lastPos = [0, 0]
     isPainting = False
-    isPainted = False
+    isDrawing = False
     clearButton = 0
     recogButton = 0
     nnet = None
     digit = None
+    answer = None
 
     def __init__(self):
         super(MainWidget, self).__init__()
@@ -96,7 +97,8 @@ class MainWidget(QtGui.QWidget):
         self.mouseLocation = [0, 0]
         self.lastPos = [0, 0]
         self.isPainting = False
-        self.isPainted = False
+        self.isDrawing = False
+        self.answer = -1
         self.clearButton = 0
         self.recogButton = 0
         self.digit = []
@@ -121,11 +123,12 @@ class MainWidget(QtGui.QWidget):
 
     def recog(self):
         arr = self.reducer.pointsReshape(self.ptList)
-        print self.nnet.predict(arr)
+        self.answer = self.nnet.predict(arr)
+        self.isDrawing = True
+        self.repaint()
 
     def mousePressEvent(self, event):
         self.isPainting = True
-        self.isPainted = False
 
     def mouseMoveEvent(self, event):
         if(self.isPainting == True):
@@ -142,8 +145,16 @@ class MainWidget(QtGui.QWidget):
     def paintEvent(self,event):
         painter = QtGui.QPainter()
         painter.begin(self)
-        self.drawLines(event, painter)
+        if(self.isDrawing == False):
+            self.drawLines(event, painter)
+        else:
+            self.drawNumber(event, painter)
         painter.end()
+
+    def drawNumber(self, event, painter):
+        painter.setPen(QtGui.QColor(255, 0, 0))
+        painter.setFont(QtGui.QFont('Arial', 300))
+        painter.drawText(event.rect(), QtCore.Qt.AlignCenter, str(self.answer))
 
     def drawLines(self, event, painter):
         painter.setRenderHint(QtGui.QPainter.Antialiasing);
@@ -156,16 +167,14 @@ class MainWidget(QtGui.QWidget):
 
     def clearArea(self):
         del self.ptList[:]
+        self.isDrawing = False
         self.repaint()
 
     def reducePt(self):
-        # ar =   [[99, 80], [63,100], [25, 76], [79, 68],[100, 62], [97, 23], [54,  0],  [0, 16]]
-        # self.clearArea()
-        # self.ptList = ar
         self.ptList = self.reducer.rdp(self.ptList, 8)
-        # self.repaint()
-        self.ptList = self.reducer.pointNormalize(self.ptList)
         self.repaint()
+        self.ptList = self.reducer.pointNormalize(self.ptList)
+        # self.repaint()
 
 def main():
     app = QtGui.QApplication(sys.argv)

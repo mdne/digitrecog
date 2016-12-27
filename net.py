@@ -14,7 +14,7 @@ class NeuralNetwork():
 		self.saver = tf.train.Saver()
 		self.X = tf.placeholder("float", [None, 16])
 		self.Y = tf.placeholder("float", [None, 10])
-		self.w_h = self.init_weights([16, 625]) # create symbolic variables
+		self.w_h = self.init_weights([16, 625])
 		self.w_o = self.init_weights([625, 10])
 		self.py_x = self.model(self.X, self.w_h, self.w_o)
 		self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.py_x, self.Y)) # compute costs
@@ -48,8 +48,8 @@ class NeuralNetwork():
 			return tf.Variable(tf.random_normal(shape, stddev=0.01))
 
 	def model(self, X, w_h, w_o):
-		h = tf.nn.sigmoid(tf.matmul(X, w_h)) # this is a basic mlp, think 2 stacked logistic regressions
-		return tf.matmul(h, w_o) # note that we dont take the softmax at the end because our cost fn does that for us
+		h = tf.nn.sigmoid(tf.matmul(X, w_h)) 
+		return tf.matmul(h, w_o) 
 	
 	def train(self):
 		trX, teX, trY, teY = self.read()
@@ -61,7 +61,7 @@ class NeuralNetwork():
 		for i in range(100):
 			for start, end in zip(range(0, len(trX), 128), range(128, len(trX)+1, 128)):
 				self.sess.run(self.train_op, feed_dict={self.X: trX[start:end], self.Y: trY[start:end]})
-			self.global_step.assign(i).eval() # set and update(eval) global_step with index, i
+			self.global_step.assign(i).eval()
 			self.saver.save(self.sess, self.ckpt_dir + "/model.ckpt", global_step=self.global_step)
 			print(i, np.mean(np.argmax(teY, axis=1) ==
 					self.sess.run(self.predict_op, feed_dict={self.X: teX})))
@@ -71,11 +71,11 @@ class NeuralNetwork():
 		ckpt = tf.train.get_checkpoint_state(self.ckpt_dir)
 		if ckpt and ckpt.model_checkpoint_path:
 			self.saver.restore(self.sess, ckpt.model_checkpoint_path)
-			print "load success"
+			print "the model was loaded successfully"
 
 	def predict(self, digit):
 		digit = np.reshape(digit, (-1, 16))
-		return self.predict_op.eval(feed_dict={self.X: digit}, session=self.sess)
+		return self.predict_op.eval(feed_dict={self.X: digit}, session=self.sess)[0]
 
 if __name__ == '__main__':
 	nnet = NeuralNetwork()

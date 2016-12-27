@@ -35,7 +35,7 @@ class Dataset():
 		self.labelsTes = data[:, num_cols-1]
 		self.labelsTes = self.labelsToOneHot(self.labelsTes)
 		self.dataTes = np.loadtxt("pendigits.tes", dtype=int, delimiter=",", usecols = range(0, num_cols-1), unpack=False)
-
+		print self.dataTes[0:5]
 	def nextBatch(self, batch_size):
 		start = self.indexEpoch
 		self.indexEpoch += batch_size
@@ -101,7 +101,7 @@ class Dataset():
 	def model2(self, X, w):
 		return tf.matmul(X, w)
 
-	def train2(self, testNum):
+	def train2(self):
 		x = tf.placeholder(tf.float32, shape=[None, 16])
 		y_ = tf.placeholder(tf.float32, shape=[None, 10])
 		W = tf.Variable(tf.zeros([16,10]))
@@ -121,10 +121,10 @@ class Dataset():
 		accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 		print(sess.run(accuracy, feed_dict={x: self.dataTes, y_: self.labelsTes}))
 
-		prediction = tf.argmax(y, 1)
-		testNum = np.reshape(testNum, (-1, 16))
-		print testNum
-		print "predictions", prediction.eval(feed_dict={x: testNum}, session=sess)
+		# prediction = tf.argmax(y, 1)
+		# testNum = np.reshape(testNum, (-1, 16))
+		# print testNum
+		# print "predictions", prediction.eval(feed_dict={x: testNum}, session=sess)
 
 
 
@@ -154,9 +154,9 @@ class Dataset():
 		X = tf.placeholder("float", [None, 1, 16, 1])
 		Y = tf.placeholder("float", [None, 10])
 
-		w = self.init_weights([1, 16, 1, 32])       # 3x3x1 conv, 32 outputs
-		w2 = self.init_weights([1, 8, 32, 64])     # 3x3x32 conv, 64 outputs
-		w3 = self.init_weights([1, 4, 64, 128])    # 3x3x32 conv, 128 outputs
+		w = self.init_weights([3, 3, 1, 32])       # 3x3x1 conv, 32 outputs
+		w2 = self.init_weights([3, 3, 32, 64])     # 3x3x32 conv, 64 outputs
+		w3 = self.init_weights([3, 3, 64, 128])    # 3x3x32 conv, 128 outputs
 		w4 = self.init_weights([128 * 4 * 4, 625]) # FC 128 * 4 * 4 inputs, 625 outputs
 		w_o = self.init_weights([625, 10])         # FC 625 inputs, 10 outputs (labels)
 
@@ -219,4 +219,4 @@ class Dataset():
 if __name__ == '__main__':
 	d = Dataset()
 	d.read()
-	d.train1()
+	# d.train3()

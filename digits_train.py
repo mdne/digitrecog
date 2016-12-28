@@ -147,11 +147,11 @@ class Dataset():
 		return pyx
 
 	def train3(self):
-		trX = self.dataTr.reshape(-1, 1, 16, 1)
-		teX = self.dataTes.reshape(-1, 1, 16, 1)
+		trX = self.dataTr.reshape(-1, 4, 4, 1)
+		teX = self.dataTes.reshape(-1, 4, 4, 1)
 		trY = self.labelsTr;
 		teY = self.labelsTes
-		X = tf.placeholder("float", [None, 1, 16, 1])
+		X = tf.placeholder("float", [None, 4, 4, 1])
 		Y = tf.placeholder("float", [None, 10])
 
 		w = self.init_weights([3, 3, 1, 32])       # 3x3x1 conv, 32 outputs
@@ -219,4 +219,4 @@ class Dataset():
 if __name__ == '__main__':
 	d = Dataset()
 	d.read()
-	# d.train3()
+	d.train1()

@@ -11,7 +11,6 @@ class NeuralNetwork():
 		if not os.path.exists(self.ckpt_dir):
 			os.makedirs(self.ckpt_dir)
 		self.global_step = tf.Variable(0, name='global_step', trainable=False)
-		self.saver = tf.train.Saver()
 		self.X = tf.placeholder("float", [None, 16])
 		self.Y = tf.placeholder("float", [None, 10])
 		self.w_h = self.init_weights([16, 625])
@@ -21,6 +20,7 @@ class NeuralNetwork():
 		self.train_op = tf.train.RMSPropOptimizer(0.001, 0.9).minimize(self.cost)
 		self.predict_op = tf.argmax(self.py_x, 1)
 		self.sess = None
+		self.saver = None
 
 	def labelsToOneHot(self, labels):
 		result = np.zeros((labels.shape[0], 10), dtype=np.int)
@@ -28,20 +28,20 @@ class NeuralNetwork():
 		return result
 
 	def read(self):
-		data = np.loadtxt("pendigits.tra", dtype=int, delimiter=",", unpack=False)
+		data = np.loadtxt("./train/pendigits.tra", dtype=int, delimiter=",", unpack=False)
 		num_rows = data.shape[0]
 		num_cols = data.shape[1]
 		
 		labelsTr = data[:, num_cols-1]
 		labelsTr = self.labelsToOneHot(labelsTr)
-		dataTr = np.loadtxt("pendigits.tra", dtype=int, delimiter=",", usecols = range(0, num_cols-1), unpack=False)
+		dataTr = np.loadtxt("./train/pendigits.tra", dtype=int, delimiter=",", usecols = range(0, num_cols-1), unpack=False)
 		
-		data = np.loadtxt("pendigits.tes", dtype=int, delimiter=",", unpack=False)
+		data = np.loadtxt("./train/pendigits.tes", dtype=int, delimiter=",", unpack=False)
 		num_rows = data.shape[0]
 		num_cols = data.shape[1]
 		labelsTes = data[:, num_cols-1]
 		labelsTes = self.labelsToOneHot(labelsTes)
-		dataTes = np.loadtxt("pendigits.tes", dtype=int, delimiter=",", usecols = range(0, num_cols-1), unpack=False)
+		dataTes = np.loadtxt("./train/pendigits.tes", dtype=int, delimiter=",", usecols = range(0, num_cols-1), unpack=False)
 		return dataTr, dataTes, labelsTr, labelsTes
 
 	def init_weights(self, shape):
@@ -53,7 +53,7 @@ class NeuralNetwork():
 	
 	def train(self):
 		trX, teX, trY, teY = self.read()
-
+		self.saver = tf.train.Saver()
 		self.sess = tf.InteractiveSession()
 		tf.global_variables_initializer().run()
 		
@@ -65,7 +65,10 @@ class NeuralNetwork():
 			self.saver.save(self.sess, self.ckpt_dir + "/model.ckpt", global_step=self.global_step)
 			print(i, np.mean(np.argmax(teY, axis=1) ==
 					self.sess.run(self.predict_op, feed_dict={self.X: teX})))
+		print "training is done"
+
 	def load(self):
+		self.saver = tf.train.Saver()
 		self.sess = tf.InteractiveSession()
 		tf.global_variables_initializer().run()
 		ckpt = tf.train.get_checkpoint_state(self.ckpt_dir)

@@ -11,7 +11,6 @@ class NeuralNetwork():
 		if not os.path.exists(self.ckpt_dir):
 			os.makedirs(self.ckpt_dir)
 		self.global_step = tf.Variable(0, name='global_step', trainable=False)
-		self.saver = tf.train.Saver()
 		self.X = tf.placeholder("float", [None, 16])
 		self.Y = tf.placeholder("float", [None, 10])
 		self.w_h = self.init_weights([16, 625]) # create symbolic variables
@@ -21,9 +20,10 @@ class NeuralNetwork():
 		self.p_keep_hidden = tf.placeholder("float")
 		self.py_x = self.model(self.X, self.w_h, self.w_h2, self.w_o, self.p_keep_input, self.p_keep_hidden)
 		self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.py_x, self.Y)) # compute costs
-		self.train_op = tf.train.GradientDescentOptimizer(0.05).minimize(self.cost)
+		self.train_op = tf.train.RMSPropOptimizer(0.001, 0.9).minimize(self.cost)
 		self.predict_op = tf.argmax(self.py_x, 1)
 		self.sess = None
+		self.saver = None
 
 	def labelsToOneHot(self, labels):
 		result = np.zeros((labels.shape[0], 10), dtype=np.int)
@@ -60,7 +60,7 @@ class NeuralNetwork():
 	
 	def train(self):
 		trX, teX, trY, teY = self.read()
-
+		self.saver = tf.train.Saver()
 		self.sess = tf.InteractiveSession()
 		tf.global_variables_initializer().run()
 		
@@ -76,6 +76,7 @@ class NeuralNetwork():
 												self.p_keep_input: 1.0,
 												self.p_keep_hidden: 1.0})))
 	def load(self):
+		self.saver = tf.train.Saver()
 		self.sess = tf.InteractiveSession()
 		ckpt = tf.train.get_checkpoint_state(self.ckpt_dir)
 		if ckpt and ckpt.model_checkpoint_path:
@@ -86,7 +87,7 @@ class NeuralNetwork():
 	def predict(self, digit):
 		digit = np.reshape(digit, (-1, 16))
 		return self.predict_op.eval(feed_dict={self.X: digit, self.p_keep_input: 1.0,
-												self.p_keep_hidden: 1.0}, session=self.sess)
+												self.p_keep_hidden: 1.0}, session=self.sess)[0]
 
 if __name__ == '__main__':
 	nnet = NeuralNetwork()

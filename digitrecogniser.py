@@ -76,14 +76,14 @@ class Reducer:
         return result
 
 class MainWidget(QtGui.QWidget):
-    reducer = 0
+    reducer = None
     ptList = []
     mouseLocation = [0, 0]
     lastPos = [0, 0]
     isPainting = False
     isDrawing = False
-    clearButton = 0
-    recogButton = 0
+    clearButton = None
+    recogButton = None
     nnet = None
     digit = None
     answer = None
@@ -122,6 +122,9 @@ class MainWidget(QtGui.QWidget):
         self.show()
 
     def recog(self):
+        if not self.ptList:
+            print "please draw a digit"
+            return
         arr = self.reducer.pointsReshape(self.ptList)
         self.answer = self.nnet.predict(arr)
         self.isDrawing = True
@@ -174,7 +177,6 @@ class MainWidget(QtGui.QWidget):
         self.ptList = self.reducer.rdp(self.ptList, 8)
         self.repaint()
         self.ptList = self.reducer.pointNormalize(self.ptList)
-        # self.repaint()
 
 def main():
     app = QtGui.QApplication(sys.argv)

@@ -6,9 +6,7 @@ from math import sqrt
 import numpy as np
 from net import NeuralNetwork
 
-class Reducer:
-    weights = []
-
+class Reducer(object):
     def __init__(self):
         self.weights = []
 
@@ -76,18 +74,6 @@ class Reducer:
         return result
 
 class MainWidget(QtGui.QWidget):
-    reducer = None
-    ptList = []
-    mouseLocation = [0, 0]
-    lastPos = [0, 0]
-    isPainting = False
-    isDrawing = False
-    clearButton = None
-    recogButton = None
-    nnet = None
-    digit = None
-    answer = None
-
     def __init__(self):
         super(MainWidget, self).__init__()
         self.reducer = Reducer()
@@ -125,6 +111,7 @@ class MainWidget(QtGui.QWidget):
         if not self.ptList:
             print "please draw a digit"
             return
+        self.ptList = self.reducer.pointNormalize(self.ptList)
         arr = self.reducer.pointsReshape(self.ptList)
         self.answer = self.nnet.predict(arr)
         self.isDrawing = True
@@ -176,7 +163,6 @@ class MainWidget(QtGui.QWidget):
     def reducePt(self):
         self.ptList = self.reducer.rdp(self.ptList, 8)
         self.repaint()
-        self.ptList = self.reducer.pointNormalize(self.ptList)
 
 def main():
     app = QtGui.QApplication(sys.argv)

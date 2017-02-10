@@ -5,7 +5,7 @@ import tensorflow as tf
 
 import os
 
-class NeuralNetwork():
+class NeuralNetwork(object):
 	def __init__(self):
 		self.ckpt_dir = "./ckpt_dir"
 		if not os.path.exists(self.ckpt_dir):
